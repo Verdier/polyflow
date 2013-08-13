@@ -1,11 +1,15 @@
 {
-  "name": "taker",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "start": "node app.js"
+  "name": "polyflow",
+  "version": "0.0.1beta",
+  "description": "A flow-based programming framework",
+  "keywords": ["FBP", "flow", "framework"],
+  "author": { 
+      "name" : "Luc Verdier", 
+      "email" : "luc.verdier1@gmail.com"
   },
-  "dependencies": {
+  "files": ["README.md", "src"],
+  "scripts": {
+    "start": "node src/index.js"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
