@@ -1,12 +1,12 @@
 'use strict';
 
 describe('The component', function () {
-    var tasker = require('../../src/polyflow');
+    var polyflow = require('../../src/polyflow');
 
     describe('core.forwarder', function () {
 
         it('should forward the stream', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
 
             graph.begin()
                 .then('core.forwarder')
@@ -19,7 +19,7 @@ describe('The component', function () {
         });
 
         it('should be definable in graph using label shortcut', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
 
             graph.begin()
                 .label()
@@ -39,22 +39,27 @@ describe('The component', function () {
     describe('core.set', function () {
 
         it('should inject something in the stream', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
             var array = [1, 2, 3];
 
             graph.begin()
                 .then('core.set', {
-                    name: 'array',
-                    value: array
+                    dst: 'array',
+                    src: array
                 })
                 .then('core.set', {
-                    name: 'bool',
-                    value: true
+                    dst: 'bool',
+                    src: true
+                })
+                .then('core.set', {
+                    dst: 'bool2',
+                    src: 'bool'
                 })
                 .then(function ($stream) {
                     expect($stream.array).toEqual([1, 2, 3]);
                     expect($stream.array).not.toBe(array);
                     expect($stream.bool).toBe(true);
+                    expect($stream.bool2).toBe(true);
                     done();
                 });
 
@@ -63,7 +68,7 @@ describe('The component', function () {
         });
 
         it('should be definable in graph using set shortcut', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
             var array = [1, 2, 3];
 
             graph.begin()
@@ -85,7 +90,7 @@ describe('The component', function () {
     describe('core.unset', function () {
 
         it('should remove something from the stream', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
 
             graph.begin()
                 .then('core.unset', {
@@ -108,7 +113,7 @@ describe('The component', function () {
         });
 
         it('should be definable in graph using unset shortcut', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
 
             graph.begin()
                 .unset('array')
@@ -131,19 +136,19 @@ describe('The component', function () {
     describe('core.forEach', function () {
 
         it('should loop over an array and set each value into a substream', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
             var array = [];
 
             graph.begin()
                 .then('core.forEach', {
-                    source: [1, 2, 3],
-                    destination: 'value'
+                    src: [1, 2, 3],
+                    dst: 'value'
                 })
                 .then(function ($stream) {
                     array.push($stream.value);
                 });
 
-            var stream = new tasker.Stream();
+            var stream = new polyflow.Stream();
             stream.$on('die', function (stream) {
                 expect(array).toEqual([1, 2, 3]);
                 done();
@@ -152,9 +157,9 @@ describe('The component', function () {
             var network = graph.compile();
             network.digest(stream);
         });
-        
+
         it('should loop over an object and set each value/key into a substream', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
             var obj = {};
 
             graph.begin()
@@ -163,7 +168,7 @@ describe('The component', function () {
                     b: 2
                 })
                 .forEach('object', {
-                    value: 'value', 
+                    value: 'value',
                     key: 'key'
                 }, 'A')
                 .then(function ($stream) {
@@ -184,13 +189,13 @@ describe('The component', function () {
         });
 
         it('should fire finished when all substream are died', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
             var counter = 0;
 
             graph.begin()
                 .then('core.forEach', 'A', {
-                    source: [1, 2, 3],
-                    destination: 'value'
+                    src: [1, 2, 3],
+                    dst: 'value'
                 })
                 .then(function () {
                     ++counter;
@@ -207,7 +212,7 @@ describe('The component', function () {
         });
 
         it('should be definable in graph using forEach shortcut', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
             var counter = 0;
 
             graph.begin()
@@ -227,7 +232,7 @@ describe('The component', function () {
         });
 
         it('should extract an array from the stream', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
             var counter = 0;
 
             graph.begin()
@@ -252,17 +257,17 @@ describe('The component', function () {
     describe('core.append', function () {
 
         it('should append something to an existing array in the stream', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
 
             graph.begin()
                 .set('array', [])
                 .then('core.append', {
-                    value: 1,
-                    destination: 'array'
+                    src: 1,
+                    dst: 'array'
                 })
                 .then('core.append', {
-                    value: 2,
-                    destination: 'array'
+                    src: 2,
+                    dst: 'array'
                 })
                 .then(function ($stream) {
                     expect($stream.array).toEqual([1, 2]);
@@ -274,7 +279,7 @@ describe('The component', function () {
         });
 
         it('should extract a value from the stream', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
 
             graph.begin()
                 .set('array', [])
@@ -292,7 +297,7 @@ describe('The component', function () {
         });
 
         it('should works with forEach', function (done) {
-            var graph = tasker.graph('graph');
+            var graph = polyflow.graph('graph');
 
             graph.begin()
                 .set('src', [1, 2, 3])

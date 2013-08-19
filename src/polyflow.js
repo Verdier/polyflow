@@ -20,6 +20,9 @@ injector.addService('$outputs', function () {
 injector.addService('$stream', function () {
     return null;
 });
+injector.addService('$param', function () {
+    return null;
+});
 
 var polyflow = {};
 
@@ -74,7 +77,7 @@ polyflow.loadComponents = function (dirname) {
     });
 };
 
-var componentsDirname = path.join(__dirname, 'components');
-polyflow.loadComponents(componentsDirname);
+polyflow.loadComponents(path.join(__dirname, 'components'));
+polyflow.loadComponents(path.join(__dirname, 'services'));
 
 module.exports = polyflow;

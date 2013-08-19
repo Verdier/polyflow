@@ -1,9 +1,9 @@
 'use strict';
 
-module.exports = function (tasker) {
+module.exports = function (polyflow) {
 
-    tasker.nano('core.unset', function (param) {
-        var name = param.name;
+    polyflow.nano('core.unset', function ($param) {
+        var name = $param.name;
 
         return {
             outputs: {

@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (tasker) {
+module.exports = function (polyflow) {
 
     var param = {
         outputs: {
@@ -8,7 +8,7 @@ module.exports = function (tasker) {
         }
     };
 
-    tasker.nano('core.forwarder', param, function ($outputs) {
+    polyflow.nano('core.forwarder', param, function ($outputs) {
         $outputs.out();
     });
 

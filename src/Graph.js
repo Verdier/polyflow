@@ -134,11 +134,11 @@ Graph.prototype.label = function (nodeName) {
     return this;
 };
 
-Graph.prototype.set = function (name, value, nodeName) {
+Graph.prototype.set = function (dst, src, nodeName) {
     nodeName = nodeName || this.tasker.$anonymous.make();
     this.then('core.set', nodeName, {
-        name: name,
-        value: value
+        src: src,
+        dst: dst
     });
     return this;
 };
@@ -151,20 +151,20 @@ Graph.prototype.unset = function (name, value, nodeName) {
     return this;
 };
 
-Graph.prototype.forEach = function (source, destination, nodeName) {
+Graph.prototype.forEach = function (src, dst, nodeName) {
     nodeName = nodeName || this.tasker.$anonymous.make();
     this.then('core.forEach', nodeName, {
-        source: source,
-        destination: destination
+        src: src,
+        dst: dst
     });
     return this;
 };
 
-Graph.prototype.append = function (value, destination, nodeName) {
+Graph.prototype.append = function (src, dst, nodeName) {
     nodeName = nodeName || this.tasker.$anonymous.make();
     this.then('core.append', nodeName, {
-        value: value,
-        destination: destination
+        src: src,
+        dst: dst
     });
     return this;
 };

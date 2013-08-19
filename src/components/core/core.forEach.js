@@ -2,39 +2,42 @@
 
 var util = require('util');
 
-module.exports = function (tasker) {
+module.exports = function (polyflow) {
 
-    tasker.nano('core.forEach', function (param) {
-        var source = param.source;
-        var destination = param.destination;
+    polyflow.nano('core.forEach', function ($param, $parser) {
+        var src = $param.src;
+        var dst = $param.dst;
 
-        
         var inputs = [];
-        var extractSource = false;
-        if (!util.isArray(source)) {
-            extractSource = true;
-            inputs.push(source);
-        }
-        
-        var injectValue = false;
-        var injectKey = false;
-        
         var outputs = [];
-        if (typeof destination === 'string') {
-            outputs.push(destination);
-            injectValue = true;
+
+        var extractor = $parser.makeExtractor(src);
+        inputs = inputs.concat(extractor.$inputs);
+
+        var valueInjector = null;
+        var keyInjector = null;
+
+        if (typeof dst === 'string') {
+            valueInjector = $parser.makeInjector(dst);
         } else {
-            if(destination.value !== undefined) {
-                outputs.push(destination.value);
-                injectValue = true;
+            if (dst.value !== undefined) {
+                valueInjector = $parser.makeInjector(dst.value);
             }
-            if(destination.key !== undefined) {
-                outputs.push(destination.key);
-                injectKey = true;
+            if (dst.key !== undefined) {
+                keyInjector = $parser.makeInjector(dst.key);
             }
         }
 
-        param = {
+        if (valueInjector !== null) {
+            inputs = inputs.concat(valueInjector.$inputs);
+            outputs = outputs.concat(valueInjector.$outputs);
+        }
+        if (keyInjector !== null) {
+            inputs = inputs.concat(keyInjector.$inputs);
+            outputs = outputs.concat(keyInjector.$outputs);
+        }
+
+        var param = {
             inputs: inputs,
             outputs: {
                 out: {
@@ -47,7 +50,7 @@ module.exports = function (tasker) {
         };
 
         param.fn = function ($inputs, $outputs, $stream) {
-            var obj = (extractSource ? $inputs[source] : source);
+            var obj = extractor.extract($stream);
             var keys = Object.keys(obj);
 
             if (keys.length === 0) {
@@ -65,12 +68,19 @@ module.exports = function (tasker) {
                         $outputs.$done();
                     }
                 });
-                var args = [substream];
-                if (injectValue) {
-                    args.push(obj[key]);
+                var out,
+                    args = [substream];
+                if (valueInjector !== null) {
+                    out = valueInjector.inject(obj[key], $stream);
+                    if (out) {
+                        args.push(out);
+                    }
                 }
-                if (injectKey) {
-                    args.push(key);
+                if (keyInjector !== null) {
+                    out = keyInjector.inject(key, $stream);
+                    if (out) {
+                        args.push(out);
+                    }
                 }
                 $outputs.out.apply($outputs, args);
             });
