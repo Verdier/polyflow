@@ -130,7 +130,7 @@ describe('The component', function () {
 
     describe('core.forEach', function () {
 
-        it('should loop over an array and set each value onto a substream', function (done) {
+        it('should loop over an array and set each value into a substream', function (done) {
             var graph = tasker.graph('graph');
             var array = [];
 
@@ -151,6 +151,36 @@ describe('The component', function () {
 
             var network = graph.compile();
             network.digest(stream);
+        });
+        
+        it('should loop over an object and set each value/key into a substream', function (done) {
+            var graph = tasker.graph('graph');
+            var obj = {};
+
+            graph.begin()
+                .set('object', {
+                    a: 1,
+                    b: 2
+                })
+                .forEach('object', {
+                    value: 'value', 
+                    key: 'key'
+                }, 'A')
+                .then(function ($stream) {
+                    obj[$stream.key] = $stream.value;
+                });
+
+            graph.select('A').on('finished')
+                .then(function () {
+                    expect(obj).toEqual({
+                        a: 1,
+                        b: 2
+                    });
+                    done();
+                });
+
+            var network = graph.compile();
+            network.digest();
         });
 
         it('should fire finished when all substream are died', function (done) {
