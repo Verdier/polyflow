@@ -6,16 +6,7 @@ var Graph = function (tasker, name, param) {
     this.tasker = tasker;
     this.name = name;
 
-    this.inputs = null;
-    if (param !== undefined && param.inputs !== undefined) {
-        this.inputs = param.inputs;
-    }
-
-    this.outputs = null;
-    if (param !== undefined && param.outputs !== undefined) {
-        this.outputs = param.outputs;
-    }
-
+    this.outputs = {};
     this.nodes = {};
     this.connexions = [];
 
@@ -98,6 +89,27 @@ Graph.prototype.addNode = function (componentName, nodeName, args) {
     };
 
     this.select(nodeName);
+    return this;
+};
+
+Graph.prototype.output = function (outputName) {
+    if (this._selected_node === null) {
+        throw new Error('No node selected');
+    }
+    if (this._selected_output === null) {
+        throw new Error('No output selected');
+    }
+
+    if (this.outputs[outputName] === undefined) {
+        this.outputs[outputName] = [];
+    }
+    this.outputs[outputName].push({
+        nodeName: this._selected_node,
+        outputName: this._selected_output
+    });
+
+    this._selected_node = null;
+    this._selected_output = null;
     return this;
 };
 

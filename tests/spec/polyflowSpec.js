@@ -258,6 +258,47 @@ describe('PolyFlow', function () {
                 expect(b).toBe(true);
             });
         });
+
+        it('should be connectable', function () {
+            var a = false,
+                b = false,
+                graph1 = tasker.graph('graph1'),
+                graph2 = tasker.graph('graph2');
+
+            graph1.begin()
+                .then('nano.io', 'io')
+                .output('out');
+
+            graph1.select('io').on('out2')
+                .output('out2');
+
+            graph2.begin()
+                .then('graph1', 'g1')
+                .then(function () {
+                    a = true;
+                });
+
+            graph2.select('g1').on('out2')
+                .then(function () {
+                    b = true;
+                });
+
+            var network = graph2.compile();
+
+            runs(function () {
+                network.digest({
+                    in1: true
+                });
+                network.digest({
+                    in1: false
+                });
+            });
+
+            waitsFor(function () {
+                return a && b;
+            }, 'all branches to finilize', 200);
+
+        });
     });
 
     describe('has stream which', function () {

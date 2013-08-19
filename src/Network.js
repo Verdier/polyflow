@@ -3,12 +3,13 @@
 var Stream = require('./Stream.js');
 var Node = require('./Node.js');
 
-var Network = function (tasker, graph) {
+var Network = function (polyflow, graph) {
+    this.graph = graph;
     this.nodes = {};
 
     Object.keys(graph.nodes).forEach(function (nodeName) {
         var definition = graph.nodes[nodeName];
-        var component = tasker.getComponent(definition.componentName);
+        var component = polyflow.getComponent(definition.componentName);
         this.nodes[nodeName] = component.compile(definition.args);
     }, this);
 
@@ -25,8 +26,16 @@ var Network = function (tasker, graph) {
     }, this);
 };
 
-Network.prototype.connect = function (out, node) {
-    /* Not implemented */
+Network.prototype.connect = function (outputName, node) {
+    if (this.graph.outputs[outputName] === undefined) {
+        throw new Error('Undefined output ' + outputName);
+    }
+    this.graph.outputs[outputName].forEach(function (output) {
+        if (this.nodes[output.nodeName] === undefined) {
+            throw new Error('Undefined node ' + output.nodeName);
+        }
+        this.nodes[output.nodeName].connect(output.outputName, node);
+    }, this);
 };
 
 Network.prototype.digest = function (stream) {
