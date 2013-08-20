@@ -25,7 +25,7 @@ describe('PolyFlow', function () {
         }
     });
 
-    describe('has basic functionalities which', function () {
+    describe('basic functionalities', function () {
 
         it('should allow to create/retreive nano and graph', function () {
             tasker.nano('nano1', function () {});
@@ -43,7 +43,7 @@ describe('PolyFlow', function () {
 
     });
 
-    describe('has dependecy injection system which', function () {
+    describe('dependecy injection system', function () {
 
         tasker.service('service1', function () {
             return {
@@ -141,7 +141,7 @@ describe('PolyFlow', function () {
         });
     });
 
-    describe('has graph which', function () {
+    describe('graph', function () {
 
         it('should be chainable using then', function (done) {
             var graph = tasker.graph('graph');
@@ -301,7 +301,7 @@ describe('PolyFlow', function () {
         });
     });
 
-    describe('has stream which', function () {
+    describe('stream', function () {
 
         it('should die when the number of instances is 0', function (done) {
             var graph = tasker.graph('graph');
@@ -369,7 +369,7 @@ describe('PolyFlow', function () {
 
     });
 
-    describe('has network which', function () {
+    describe('network', function () {
 
         it('should managed inputs/outputs parameters', function (done) {
             var graph = tasker.graph('graph');

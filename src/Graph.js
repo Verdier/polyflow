@@ -63,7 +63,7 @@ Graph.prototype.then = function (componentName, nodeName, args) {
     return this;
 };
 
-Graph.prototype.addNode = function (componentName, nodeName, args) {
+Graph.prototype.addNode = function (componentName, nodeName, binder) {
     if (typeof componentName === 'function') {
         /* Create an anonymous nano */
         var fn = componentName;
@@ -71,7 +71,7 @@ Graph.prototype.addNode = function (componentName, nodeName, args) {
         componentName = nano.name;
     }
     if (nodeName !== undefined && typeof nodeName !== 'string') {
-        args = nodeName;
+        binder = nodeName;
         nodeName = undefined;
     }
     if (nodeName === undefined) {
@@ -85,7 +85,7 @@ Graph.prototype.addNode = function (componentName, nodeName, args) {
     this.nodes[nodeName] = {
         nodeName: nodeName,
         componentName: componentName,
-        args: args
+        binder: binder
     };
 
     this.select(nodeName);
@@ -146,16 +146,22 @@ Graph.prototype.set = function (dst, src, nodeName) {
 Graph.prototype.unset = function (name, value, nodeName) {
     nodeName = nodeName || this.tasker.$anonymous.make();
     this.then('core.unset', nodeName, {
-        name: name
+        name: "'" + name + "'"
     });
     return this;
 };
 
 Graph.prototype.forEach = function (src, dst, nodeName) {
     nodeName = nodeName || this.tasker.$anonymous.make();
+    var key = dst.key || null;
+    var value = dst.value || null;
+    if (key === null && value === null) {
+        value = dst;
+    }
     this.then('core.forEach', nodeName, {
         src: src,
-        dst: dst
+        key: key,
+        value: value
     });
     return this;
 };

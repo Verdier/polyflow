@@ -1,46 +1,36 @@
 'use strict';
 
-var annotate = require('./modules/annotate.js');
+var util = require('util');
 var Node = require('./Node.js');
 
-var Nano = function (polyflow, name, builder) {
+var Nano = function (polyflow, name, param) {
     this.polyflow = polyflow;
     this.name = name;
-    this.builder = builder;
+    this.compiled = false;
+
+    this.fn = param.fn;
+    this.allowMultipleOutputs = param.allowMultipleOutputs || false;
+
+    this.inputs = param.inputs || null;
+    this.outputs = param.outputs || null;
+
+    if (util.isArray(this.outputs)) {
+        this.outputs = {
+            out: this.outputs
+        };
+    }
 };
 
-Nano.prototype.compile = function (param) {
-    var nano;
-    if (typeof this.builder === 'function') {
-        /* The nano is dynamic */
-        this.polyflow.$injector.inject(this.builder);
-        if (this.builder.$$paramIndex === undefined) {
-            this.builder.$$paramIndex = this.builder.$arguments.indexOf('$param');
-        }
-        if (this.builder.$$paramIndex !== -1) {
-            this.builder.$injects[this.builder.$$paramIndex] = param;
-        }
-        nano = this.builder.apply(null, this.builder.$injects);
-    } else {
-        /* The nano is static */
-        nano = this.builder;
+Nano.prototype.compile = function (binder) {
+    if (!this.compiled) {
+        this.polyflow.$injector.inject(this.fn);
+        /* Compute special service indices. */
+        this.fn.$$inputsIndex = this.fn.$arguments.indexOf('$inputs');
+        this.fn.$$outputsIndex = this.fn.$arguments.indexOf('$outputs');
+        this.fn.$$streamIndex = this.fn.$arguments.indexOf('$stream');
+        this.compiled = true;
     }
-
-    if (nano.fn === undefined) {
-        throw new Error('At least, a nano should define fn');
-    }
-    if (nano.allowMultipleOutputs === undefined) {
-        nano.allowMultipleOutputs = false;
-    }
-
-    this.polyflow.$injector.inject(nano.fn);
-
-    /* Compute special service indices. */
-    nano.fn.$$inputsIndex = nano.fn.$arguments.indexOf('$inputs');
-    nano.fn.$$outputsIndex = nano.fn.$arguments.indexOf('$outputs');
-    nano.fn.$$streamIndex = nano.fn.$arguments.indexOf('$stream');
-
-    return new Node(this.polyflow, nano);
+    return new Node(this.polyflow, this, binder);
 };
 
 module.exports = Nano;

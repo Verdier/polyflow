@@ -94,10 +94,10 @@ describe('The component', function () {
 
             graph.begin()
                 .then('core.unset', {
-                    name: 'array',
+                    name: '"array"',
                 })
                 .then('core.unset', {
-                    name: 'bool',
+                    name: '"bool"',
                 })
                 .then(function ($stream) {
                     expect($stream.array).toBeUndefined();

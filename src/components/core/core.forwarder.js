@@ -3,9 +3,7 @@
 module.exports = function (polyflow) {
 
     var param = {
-        outputs: {
-            out: []
-        }
+        outputs: []
     };
 
     polyflow.nano('core.forwarder', param, function ($outputs) {

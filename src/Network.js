@@ -10,7 +10,7 @@ var Network = function (polyflow, graph) {
     Object.keys(graph.nodes).forEach(function (nodeName) {
         var definition = graph.nodes[nodeName];
         var component = polyflow.getComponent(definition.componentName);
-        this.nodes[nodeName] = component.compile(definition.args);
+        this.nodes[nodeName] = component.compile(definition.binder);
     }, this);
 
     graph.connexions.forEach(function (connexion) {

@@ -1,31 +1,36 @@
 'use strict';
 
-var output = require('./modules/output.js');
+var parser = require('./modules/parser.js');
+var outputHandler = require('./modules/outputHandler.js');
 
-var Node = function (tasker, nano) {
-    this.tasker = tasker;
+var Node = function (polyflow, nano, binder) {
+    this.polyflow = polyflow;
     this.nano = nano;
+    this.binder = binder || {};
 
-    this.inputs = null;
-    this.outputs = null;
+    this.extractor = null;
+    this.injectors = null;
 
     this.connexions = {};
 
     this.inputsDefined = false;
     this.outputsDefined = false;
 
-    if (nano.inputs !== undefined) {
+    if (nano.inputs !== null) {
         this.inputsDefined = true;
         this.inputs = nano.inputs;
+        this.extractor = parser.makeExtractor(nano.inputs, this.binder);
     }
-
-    if (nano.outputs !== undefined) {
+    if (nano.outputs !== null) {
         this.outputsDefined = true;
-        Object.keys(nano.outputs).forEach(function (outPort) {
-            this.connexions[outPort] = [];
-        }, this);
-        this.OutputHandler = output.makeOutputHandlerConstructor(nano.outputs);
         this.outputs = nano.outputs;
+        this.injectors = {};
+        Object.keys(nano.outputs).forEach(function (outputName) {
+            this.connexions[outputName] = [];
+            var output = nano.outputs[outputName];
+            this.injectors[outputName] = parser.makeInjector(output.args || output, this.binder);
+        }, this);
+        this.OutputHandler = outputHandler.makeOutputHandlerConstructor(nano.outputs);
     }
 
     this.fn = nano.fn;
@@ -42,10 +47,7 @@ Node.prototype.digest = function (stream) {
 
     if (this.inputsDefined && this.fn.$$inputsIndex !== -1) {
         /* Extract inputs from stream */
-        var inputs = {};
-        this.inputs.forEach(function (name) {
-            inputs[name] = stream[name];
-        });
+        var inputs = this.extractor.extract(stream);
         this.fn.$injects[this.fn.$$inputsIndex] = inputs;
     }
 
@@ -65,19 +67,16 @@ Node.prototype.digest = function (stream) {
         this.fn.$injects[this.fn.$$streamIndex] = stream;
     }
 
-    this.fn.apply(this, this.fn.$injects);
+    this.fn.apply(null, this.fn.$injects);
 
     if (!this.outputsDefined) {
         stream.$decrease();
     }
 };
 
-Node.prototype._handleOutput = function (stream, outputName, sets, unsets) {
-    /* Inject sets in stream */
-    stream.$inject(sets);
-
-    /* Remove unsets from stream */
-    stream.$remove(unsets);
+Node.prototype._handleOutput = function (stream, outputName, values) {
+    var injector = this.injectors[outputName];
+    injector.inject(values, stream);
 
     /* Call next nodes */
     this.connexions[outputName].forEach(function (node) {

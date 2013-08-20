@@ -2,19 +2,14 @@
 
 module.exports = function (polyflow) {
 
-    polyflow.nano('core.unset', function ($param) {
-        var name = $param.name;
+    var param = {
+        inputs: ['name'],
+        outputs: []
+    };
 
-        return {
-            outputs: {
-                out: {
-                    unset: [name]
-                }
-            },
-            fn: function ($outputs) {
-                $outputs.out();
-            }
-        };
+    polyflow.nano('core.unset', param, function ($inputs, $outputs, $stream) {
+        $stream.$remove($inputs.name);
+        $outputs.out();
     });
 
 };

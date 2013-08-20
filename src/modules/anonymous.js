@@ -1,12 +1,12 @@
 'use strict';
 
+var max_id = 0;
+var anonymous_prefix = '$$anonymous_';
+
 var anonymous = {};
 
-anonymous.$$max_id = 0;
-anonymous.$$anonymous_prefix = '$$anonymous_';
-
 anonymous.make = function () {
-    return anonymous.$$anonymous_prefix + (++anonymous.$$max_id);
+    return anonymous_prefix + (++max_id);
 };
 
 module.exports = anonymous;

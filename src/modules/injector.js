@@ -11,6 +11,10 @@ injector.addService = function (name, factory) {
     injector._services[name] = factory;
 };
 
+injector.addServiceInstance = function (name, instance) {
+    injector._service_instances[name] = instance;
+};
+
 injector.getService = function (name) {
     if (injector._service_instances[name] !== undefined) {
         return injector._service_instances[name];

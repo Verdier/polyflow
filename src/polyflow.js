@@ -39,6 +39,10 @@ polyflow.getComponent = function (name) {
     return polyflow._components[name];
 };
 
+polyflow.injectService = function (name, service) {
+    injector.addServiceInstance(name, service);
+};
+
 polyflow.service = function (name, factory) {
     injector.addService(name, factory);
 };
