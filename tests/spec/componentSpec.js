@@ -5,7 +5,7 @@ describe('The component', function () {
 
     describe('core.forwarder', function () {
 
-        it('should forward the stream', function (done) {
+        it('should forward the flow', function (done) {
             var graph = polyflow.graph('graph');
 
             graph.begin()
@@ -38,7 +38,7 @@ describe('The component', function () {
 
     describe('core.set', function () {
 
-        it('should inject something in the stream', function (done) {
+        it('should inject something in the flow', function (done) {
             var graph = polyflow.graph('graph');
             var array = [1, 2, 3];
 
@@ -55,11 +55,11 @@ describe('The component', function () {
                     dst: 'bool2',
                     src: 'bool'
                 })
-                .then(function ($stream) {
-                    expect($stream.array).toEqual([1, 2, 3]);
-                    expect($stream.array).not.toBe(array);
-                    expect($stream.bool).toBe(true);
-                    expect($stream.bool2).toBe(true);
+                .then(function ($flow) {
+                    expect($flow.array).toEqual([1, 2, 3]);
+                    expect($flow.array).not.toBe(array);
+                    expect($flow.bool).toBe(true);
+                    expect($flow.bool2).toBe(true);
                     done();
                 });
 
@@ -74,10 +74,10 @@ describe('The component', function () {
             graph.begin()
                 .set('array', array)
                 .set('bool', true)
-                .then(function ($stream) {
-                    expect($stream.array).toEqual([1, 2, 3]);
-                    expect($stream.array).not.toBe(array);
-                    expect($stream.bool).toBe(true);
+                .then(function ($flow) {
+                    expect($flow.array).toEqual([1, 2, 3]);
+                    expect($flow.array).not.toBe(array);
+                    expect($flow.bool).toBe(true);
                     done();
                 });
 
@@ -89,7 +89,7 @@ describe('The component', function () {
 
     describe('core.unset', function () {
 
-        it('should remove something from the stream', function (done) {
+        it('should remove something from the flow', function (done) {
             var graph = polyflow.graph('graph');
 
             graph.begin()
@@ -99,9 +99,9 @@ describe('The component', function () {
                 .then('core.unset', {
                     name: '"bool"',
                 })
-                .then(function ($stream) {
-                    expect($stream.array).toBeUndefined();
-                    expect($stream.bool).toBeUndefined();
+                .then(function ($flow) {
+                    expect($flow.array).toBeUndefined();
+                    expect($flow.bool).toBeUndefined();
                     done();
                 });
 
@@ -118,9 +118,9 @@ describe('The component', function () {
             graph.begin()
                 .unset('array')
                 .unset('bool')
-                .then(function ($stream) {
-                    expect($stream.array).toBeUndefined();
-                    expect($stream.bool).toBeUndefined();
+                .then(function ($flow) {
+                    expect($flow.array).toBeUndefined();
+                    expect($flow.bool).toBeUndefined();
                     done();
                 });
 
@@ -135,7 +135,7 @@ describe('The component', function () {
 
     describe('core.forEach', function () {
 
-        it('should loop over an array and set each value into a substream', function (done) {
+        it('should loop over an array and set each value into a subflow', function (done) {
             var graph = polyflow.graph('graph');
             var array = [];
 
@@ -144,21 +144,21 @@ describe('The component', function () {
                     src: [1, 2, 3],
                     dst: 'value'
                 })
-                .then(function ($stream) {
-                    array.push($stream.value);
+                .then(function ($flow) {
+                    array.push($flow.value);
                 });
 
-            var stream = new polyflow.Stream();
-            stream.$on('die', function (stream) {
+            var flow = new polyflow.Flow();
+            flow.$on('die', function (flow) {
                 expect(array).toEqual([1, 2, 3]);
                 done();
             });
 
             var network = graph.compile();
-            network.digest(stream);
+            network.digest(flow);
         });
 
-        it('should loop over an object and set each value/key into a substream', function (done) {
+        it('should loop over an object and set each value/key into a subflow', function (done) {
             var graph = polyflow.graph('graph');
             var obj = {};
 
@@ -171,8 +171,8 @@ describe('The component', function () {
                     value: 'value',
                     key: 'key'
                 }, 'A')
-                .then(function ($stream) {
-                    obj[$stream.key] = $stream.value;
+                .then(function ($flow) {
+                    obj[$flow.key] = $flow.value;
                 });
 
             graph.select('A').on('finished')
@@ -188,7 +188,7 @@ describe('The component', function () {
             network.digest();
         });
 
-        it('should fire finished when all substream are died', function (done) {
+        it('should fire finished when all subflows are died', function (done) {
             var graph = polyflow.graph('graph');
             var counter = 0;
 
@@ -231,7 +231,7 @@ describe('The component', function () {
             network.digest();
         });
 
-        it('should extract an array from the stream', function (done) {
+        it('should extract an array from the flow', function (done) {
             var graph = polyflow.graph('graph');
             var counter = 0;
 
@@ -256,7 +256,7 @@ describe('The component', function () {
 
     describe('core.append', function () {
 
-        it('should append something to an existing array in the stream', function (done) {
+        it('should append something to an existing array in the flow', function (done) {
             var graph = polyflow.graph('graph');
 
             graph.begin()
@@ -269,8 +269,8 @@ describe('The component', function () {
                     src: 2,
                     dst: 'array'
                 })
-                .then(function ($stream) {
-                    expect($stream.array).toEqual([1, 2]);
+                .then(function ($flow) {
+                    expect($flow.array).toEqual([1, 2]);
                     done();
                 });
 
@@ -278,7 +278,7 @@ describe('The component', function () {
             network.digest();
         });
 
-        it('should extract a value from the stream', function (done) {
+        it('should extract a value from the flow', function (done) {
             var graph = polyflow.graph('graph');
 
             graph.begin()
@@ -287,8 +287,8 @@ describe('The component', function () {
                 .set('v2', 2)
                 .append('v1', 'array')
                 .append('v2', 'array')
-                .then(function ($stream) {
-                    expect($stream.array).toEqual([1, 2]);
+                .then(function ($flow) {
+                    expect($flow.array).toEqual([1, 2]);
                     done();
                 });
 
@@ -306,8 +306,8 @@ describe('The component', function () {
                 .append('value', 'dst');
 
             graph.select('A').on('finished')
-                .then(function ($stream) {
-                    expect($stream.dst).toEqual([1, 2, 3]);
+                .then(function ($flow) {
+                    expect($flow.dst).toEqual([1, 2, 3]);
                     done();
                 });
 

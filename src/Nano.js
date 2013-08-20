@@ -27,7 +27,7 @@ Nano.prototype.compile = function (binder) {
         /* Compute special service indices. */
         this.fn.$$inputsIndex = this.fn.$arguments.indexOf('$inputs');
         this.fn.$$outputsIndex = this.fn.$arguments.indexOf('$outputs');
-        this.fn.$$streamIndex = this.fn.$arguments.indexOf('$stream');
+        this.fn.$$flowIndex = this.fn.$arguments.indexOf('$flow');
         this.compiled = true;
     }
     return new Node(this.polyflow, this, binder);

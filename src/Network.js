@@ -1,6 +1,6 @@
 'use strict';
 
-var Stream = require('./Stream.js');
+var Flow = require('./Flow.js');
 var Node = require('./Node.js');
 
 var Network = function (polyflow, graph) {
@@ -38,13 +38,13 @@ Network.prototype.connect = function (outputName, node) {
     }, this);
 };
 
-Network.prototype.digest = function (stream) {
-    stream = stream || {};
-    if (!(stream instanceof Stream)) {
-        stream = new Stream(stream);
+Network.prototype.digest = function (flow) {
+    flow = flow || {};
+    if (!(flow instanceof Flow)) {
+        flow = new Flow(flow);
     }
-    stream.$increase();
-    this.nodes.begin.digest(stream);
+    flow.$increase();
+    this.nodes.begin.digest(flow);
 };
 
 module.exports = Network;

@@ -30,9 +30,9 @@ describe('The module', function () {
 
         it('should extract data', function () {
             var innerObj = {
-                b: 'stream.a.b',
+                b: 'flow.a.b',
                 c: {
-                    d: 'stream.a.c.d'
+                    d: 'flow.a.c.d'
                 }
             };
             var obj = {
@@ -55,24 +55,24 @@ describe('The module', function () {
             expect(extractor.$extractors[6].$inputs).toEqual([]);
             expect(extractor.$inputs).toEqual(['a']);
 
-            var stream = new polyflow.Stream(obj);
-            var substream = stream.$createSubstream();
+            var flow = new polyflow.Flow(obj);
+            var subflow = flow.$createSubflow();
 
-            expect(extractor.$extractors.a.extract(stream)).toBe(innerObj);
-            expect(extractor.$extractors[2].extract(stream)).toBe('stream.a.b');
-            expect(extractor.$extractors[3].extract(stream)).toBe('stream.a.c.d');
-            expect(extractor.$extractors[4].extract(stream)).toBe('a.b');
-            expect(extractor.$extractors[5].extract(stream)).not.toBe(obj);
-            expect(extractor.$extractors[5].extract(stream)).toEqual(obj);
-            expect(extractor.$extractors[6].extract(stream)).toBe(null);
+            expect(extractor.$extractors.a.extract(subflow)).toBe(innerObj);
+            expect(extractor.$extractors[2].extract(subflow)).toBe('flow.a.b');
+            expect(extractor.$extractors[3].extract(subflow)).toBe('flow.a.c.d');
+            expect(extractor.$extractors[4].extract(subflow)).toBe('a.b');
+            expect(extractor.$extractors[5].extract(subflow)).not.toBe(obj);
+            expect(extractor.$extractors[5].extract(subflow)).toEqual(obj);
+            expect(extractor.$extractors[6].extract(subflow)).toBe(null);
 
-            var values = extractor.extract(stream);
-            expect(extractor.$extractors.a.extract(stream)).toEqual(values.a);
-            expect(extractor.$extractors[2].extract(stream)).toEqual(values[2]);
-            expect(extractor.$extractors[3].extract(stream)).toEqual(values[3]);
-            expect(extractor.$extractors[4].extract(stream)).toEqual(values[4]);
-            expect(extractor.$extractors[5].extract(stream)).toEqual(values[5]);
-            expect(extractor.$extractors[6].extract(stream)).toEqual(values[6]);
+            var values = extractor.extract(subflow);
+            expect(extractor.$extractors.a.extract(subflow)).toEqual(values.a);
+            expect(extractor.$extractors[2].extract(subflow)).toEqual(values[2]);
+            expect(extractor.$extractors[3].extract(subflow)).toEqual(values[3]);
+            expect(extractor.$extractors[4].extract(subflow)).toEqual(values[4]);
+            expect(extractor.$extractors[5].extract(subflow)).toEqual(values[5]);
+            expect(extractor.$extractors[6].extract(subflow)).toEqual(values[6]);
         });
 
         it('should inject data', function () {
@@ -97,28 +97,28 @@ describe('The module', function () {
             expect(injector.$inputs).toEqual(['a']);
             expect(injector.$outputs).toEqual(['a']);
 
-            var stream = new polyflow.Stream();
+            var flow = new polyflow.Flow();
 
-            injector.$injectors.a.inject(obj, stream);
-            expect(stream.a).toBe(obj);
+            injector.$injectors.a.inject(obj, flow);
+            expect(flow.a).toBe(obj);
 
-            injector.$injectors[2].inject('a.b', stream);
-            expect(stream.a.b).toBe('a.b');
+            injector.$injectors[2].inject('a.b', flow);
+            expect(flow.a.b).toBe('a.b');
 
-            injector.$injectors[3].inject('a.c.d', stream);
-            expect(stream.a.c.d).toBe('a.c.d');
+            injector.$injectors[3].inject('a.c.d', flow);
+            expect(flow.a.c.d).toBe('a.c.d');
 
-            stream = new polyflow.Stream();
+            flow = new polyflow.Flow();
             var values = {
                 a: obj,
                 2: 'a.b',
                 3: 'a.c.d'
             };
 
-            injector.inject(values, stream);
-            expect(stream.a).toBe(obj);
-            expect(stream.a.b).toBe('a.b');
-            expect(stream.a.c.d).toBe('a.c.d');
+            injector.inject(values, flow);
+            expect(flow.a).toBe(obj);
+            expect(flow.a.b).toBe('a.b');
+            expect(flow.a.c.d).toBe('a.c.d');
         });
 
     });

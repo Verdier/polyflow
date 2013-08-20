@@ -3,7 +3,7 @@
 var fs = require('fs');
 var path = require('path');
 
-var Stream = require('./Stream.js');
+var Flow = require('./Flow.js');
 var Graph = require('./Graph.js');
 var Nano = require('./Nano.js');
 
@@ -11,24 +11,15 @@ var anonymous = require('./modules/anonymous.js');
 var injector = require('./modules/injector.js');
 
 /* Set specials services. */
-injector.addService('$inputs', function () {
-    return null;
-});
-injector.addService('$outputs', function () {
-    return null;
-});
-injector.addService('$stream', function () {
-    return null;
-});
-injector.addService('$param', function () {
-    return null;
-});
+injector.addServiceInstance('$inputs', null);
+injector.addServiceInstance('$outputs', null);
+injector.addServiceInstance('$flow', null);
 
 var polyflow = {};
 
 polyflow.$anonymous = anonymous;
 polyflow.$injector = injector;
-polyflow.Stream = Stream;
+polyflow.Flow = Flow;
 
 polyflow._components = {};
 
@@ -82,6 +73,5 @@ polyflow.loadComponents = function (dirname) {
 };
 
 polyflow.loadComponents(path.join(__dirname, 'components'));
-polyflow.loadComponents(path.join(__dirname, 'services'));
 
 module.exports = polyflow;

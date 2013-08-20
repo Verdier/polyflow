@@ -2,8 +2,8 @@
 
 var Network = require('./Network.js');
 
-var Graph = function (tasker, name, param) {
-    this.tasker = tasker;
+var Graph = function (polyflow, name, param) {
+    this.polyflow = polyflow;
     this.name = name;
 
     this.outputs = {};
@@ -67,7 +67,7 @@ Graph.prototype.addNode = function (componentName, nodeName, binder) {
     if (typeof componentName === 'function') {
         /* Create an anonymous nano */
         var fn = componentName;
-        var nano = this.tasker.nano(fn);
+        var nano = this.polyflow.nano(fn);
         componentName = nano.name;
     }
     if (nodeName !== undefined && typeof nodeName !== 'string') {
@@ -76,7 +76,7 @@ Graph.prototype.addNode = function (componentName, nodeName, binder) {
     }
     if (nodeName === undefined) {
         /* Create a anonymous node */
-        nodeName = this.tasker.$anonymous.make();
+        nodeName = this.polyflow.$anonymous.make();
     }
     if (this.nodes[nodeName] !== undefined) {
         throw new Error('A node with the name ' + nodeName + ' is already defined');
@@ -123,19 +123,19 @@ Graph.prototype.connect = function (nodeA, output, nodeB) {
 };
 
 Graph.prototype.compile = function () {
-    return new Network(this.tasker, this);
+    return new Network(this.polyflow, this);
 };
 
 /* Shortcuts */
 
 Graph.prototype.label = function (nodeName) {
-    nodeName = nodeName || this.tasker.$anonymous.make();
+    nodeName = nodeName || this.polyflow.$anonymous.make();
     this.then('core.forwarder', nodeName);
     return this;
 };
 
 Graph.prototype.set = function (dst, src, nodeName) {
-    nodeName = nodeName || this.tasker.$anonymous.make();
+    nodeName = nodeName || this.polyflow.$anonymous.make();
     this.then('core.set', nodeName, {
         src: src,
         dst: dst
@@ -144,7 +144,7 @@ Graph.prototype.set = function (dst, src, nodeName) {
 };
 
 Graph.prototype.unset = function (name, value, nodeName) {
-    nodeName = nodeName || this.tasker.$anonymous.make();
+    nodeName = nodeName || this.polyflow.$anonymous.make();
     this.then('core.unset', nodeName, {
         name: "'" + name + "'"
     });
@@ -152,7 +152,7 @@ Graph.prototype.unset = function (name, value, nodeName) {
 };
 
 Graph.prototype.forEach = function (src, dst, nodeName) {
-    nodeName = nodeName || this.tasker.$anonymous.make();
+    nodeName = nodeName || this.polyflow.$anonymous.make();
     var key = dst.key || null;
     var value = dst.value || null;
     if (key === null && value === null) {
@@ -167,7 +167,7 @@ Graph.prototype.forEach = function (src, dst, nodeName) {
 };
 
 Graph.prototype.append = function (src, dst, nodeName) {
-    nodeName = nodeName || this.tasker.$anonymous.make();
+    nodeName = nodeName || this.polyflow.$anonymous.make();
     this.then('core.append', nodeName, {
         src: src,
         dst: dst

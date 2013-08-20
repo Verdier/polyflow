@@ -6,8 +6,8 @@ var outputHandler = {};
 
 outputHandler.makeOutputHandlerConstructor = function (outputs) {
 
-    var OutputHandler = function (stream, param) {
-        this.$$stream = stream;
+    var OutputHandler = function (flow, param) {
+        this.$$flow = flow;
         this.$$param = param;
 
         this.$$allowMultiple = param.allowMultipleOutputs;
@@ -20,23 +20,23 @@ outputHandler.makeOutputHandlerConstructor = function (outputs) {
             throw new Error('Already done');
         }
         this.$$isDone = true;
-        this.$$param.onDone(this.$$stream);
+        this.$$param.onDone(this.$$flow);
     };
 
     Object.keys(outputs).forEach(function (outputName) {
 
         var output = outputs[outputName],
-            substream,
+            subflow,
             args;
 
         if (util.isArray(output)) {
             args = output;
         } else {
-            substream = output.substream;
+            subflow = output.subflow;
             args = output.args;
         }
 
-        substream = substream || false;
+        subflow = subflow || false;
         args = args || [];
 
         var nullArgCount = 0;
@@ -48,7 +48,7 @@ outputHandler.makeOutputHandlerConstructor = function (outputs) {
 
         /* Make output function handler */
         OutputHandler.prototype[outputName] = function () {
-            var argsCount = args.length + (substream ? 1 : 0) - nullArgCount;
+            var argsCount = args.length + (subflow ? 1 : 0) - nullArgCount;
             if (arguments.length !== argsCount) {
                 throw new Error('Bad number of parameters');
             }
@@ -57,21 +57,21 @@ outputHandler.makeOutputHandlerConstructor = function (outputs) {
             }
 
             var values = {};
-            var inc = (substream ? 1 : 0);
+            var inc = (subflow ? 1 : 0);
             for (var i = 0; i < arguments.length; ++i) {
                 if (args[i] !== null) {
                     values[args[i]] = arguments[i + inc];
                 }
             }
 
-            var stream;
-            if (substream) {
-                stream = arguments[0];
+            var flow;
+            if (subflow) {
+                flow = arguments[0];
             } else {
-                stream = this.$$stream;
+                flow = this.$$flow;
             }
 
-            this.$$param.onOutputCalled(stream, outputName, values);
+            this.$$param.onOutputCalled(flow, outputName, values);
             ++this.$$counter;
 
             if (!this.$$allowMultiple) {

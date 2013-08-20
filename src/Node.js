@@ -43,11 +43,11 @@ Node.prototype.connect = function (outputName, node) {
     this.connexions[outputName].push(node);
 };
 
-Node.prototype.digest = function (stream) {
+Node.prototype.digest = function (flow) {
 
     if (this.inputsDefined && this.fn.$$inputsIndex !== -1) {
-        /* Extract inputs from stream */
-        var inputs = this.extractor.extract(stream);
+        /* Extract inputs from flow */
+        var inputs = this.extractor.extract(flow);
         this.fn.$injects[this.fn.$$inputsIndex] = inputs;
     }
 
@@ -55,7 +55,7 @@ Node.prototype.digest = function (stream) {
         /* Make output handler */
         var outputHandler = this._handleOutput.bind(this);
         var doneHandler = this._handleDone.bind(this);
-        var outputs = new this.OutputHandler(stream, {
+        var outputs = new this.OutputHandler(flow, {
             onOutputCalled: outputHandler,
             onDone: doneHandler,
             allowMultipleOutputs: this.nano.allowMultipleOutputs
@@ -63,32 +63,32 @@ Node.prototype.digest = function (stream) {
         this.fn.$injects[this.fn.$$outputsIndex] = outputs;
     }
 
-    if (this.fn.$$streamIndex !== -1) {
-        this.fn.$injects[this.fn.$$streamIndex] = stream;
+    if (this.fn.$$flowIndex !== -1) {
+        this.fn.$injects[this.fn.$$flowIndex] = flow;
     }
 
     this.fn.apply(null, this.fn.$injects);
 
     if (!this.outputsDefined) {
-        stream.$decrease();
+        flow.$decrease();
     }
 };
 
-Node.prototype._handleOutput = function (stream, outputName, values) {
+Node.prototype._handleOutput = function (flow, outputName, values) {
     var injector = this.injectors[outputName];
-    injector.inject(values, stream);
+    injector.inject(values, flow);
 
     /* Call next nodes */
     this.connexions[outputName].forEach(function (node) {
-        stream.$increase();
+        flow.$increase();
         process.nextTick(function () {
-            node.digest(stream);
+            node.digest(flow);
         });
     });
 };
 
-Node.prototype._handleDone = function (stream) {
-    stream.$decrease();
+Node.prototype._handleDone = function (flow) {
+    flow.$decrease();
 };
 
 module.exports = Node;

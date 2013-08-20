@@ -8,7 +8,7 @@ module.exports = function (polyflow) {
         inputs: ['src'],
         outputs: {
             out: {
-                substream: true,
+                subflow: true,
                 args: ['value', 'key']
             },
             finished: []
@@ -16,7 +16,7 @@ module.exports = function (polyflow) {
         allowMultipleOutputs: true,
     };
 
-    polyflow.nano('core.forEach', param, function ($inputs, $outputs, $stream) {
+    polyflow.nano('core.forEach', param, function ($inputs, $outputs, $flow) {
         var keys = Object.keys($inputs.src);
 
         if (keys.length === 0) {
@@ -26,15 +26,15 @@ module.exports = function (polyflow) {
 
         var counter = keys.length;
         keys.forEach(function (key) {
-            var substream = $stream.$createSubstream();
-            substream.$on('die', function (stream) {
+            var subflow = $flow.$createSubflow();
+            subflow.$on('die', function (flow) {
                 --counter;
                 if (counter === 0) {
                     $outputs.finished();
                     $outputs.$done();
                 }
             });
-            $outputs.out(substream, $inputs.src[key], key);
+            $outputs.out(subflow, $inputs.src[key], key);
         });
     });
 

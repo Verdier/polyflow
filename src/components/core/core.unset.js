@@ -7,8 +7,8 @@ module.exports = function (polyflow) {
         outputs: []
     };
 
-    polyflow.nano('core.unset', param, function ($inputs, $outputs, $stream) {
-        $stream.$remove($inputs.name);
+    polyflow.nano('core.unset', param, function ($inputs, $outputs, $flow) {
+        $flow.$remove($inputs.name);
         $outputs.out();
     });
 
