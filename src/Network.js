@@ -12,7 +12,7 @@ var Network = function (polyflow, graph) {
         var component = polyflow.getComponent(definition.componentName);
         this.nodes[nodeName] = component.compile(definition.binder);
         this.nodes[nodeName].name = nodeName;
-        this.nodes[nodeName].network = this;
+        this.nodes[nodeName].parent = this;
     }, this);
 
     graph.connexions.forEach(function (connexion) {
@@ -27,8 +27,6 @@ var Network = function (polyflow, graph) {
         nodeA.connect(connexion.output, nodeB);
     }, this);
 };
-
-Network.prototype.isNetwork = true;
 
 Network.prototype.connect = function (outputName, node) {
     if (this.graph.outputs[outputName] === undefined) {
@@ -59,15 +57,23 @@ Network.prototype.getDotId = function () {
     return this.nodes.begin.getDotId();
 };
 
+Network.prototype.endDotSubgraph = function () {
+    this.dotSubgraphEnded = true;
+    return '}\n';
+};
+
 Network.prototype.toDot = function (subgraph) {
     var dot = '';
     if (subgraph) {
+        this.dotSubgraphEnded = false;
         var cluster = 'cluster' + (++Network.maxDotClusterId);
         dot += 'subgraph ' + cluster + ' {\n';
         dot += 'label = "' + this.graph.name + '";\n';
         dot += 'style = "dashed"\n';
         dot += this.nodes.begin.toDot(true);
-        dot += '}\n';
+        if (!this.dotSubgraphEnded) {
+            dot += this.endDotSubgraph();
+        }
     } else {
         dot += 'strict digraph G {\n';
         dot += 'node [shape=record];\n';

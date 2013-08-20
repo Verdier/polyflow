@@ -36,8 +36,6 @@ var Node = function (polyflow, nano, binder) {
     this.fn = nano.fn;
 };
 
-Node.prototype.isNetwork = false;
-
 Node.prototype.connect = function (outputName, node) {
     if (this.connexions[outputName] === undefined) {
         throw new Error('Ouput ' + outputName + ' on component ' + this.nano.name + ' is not defined');
@@ -121,8 +119,8 @@ Node.prototype.toDot = function (subgraph) {
     /* Connexions */
     Object.keys(this.connexions).forEach(function (outputName) {
         this.connexions[outputName].forEach(function (node) {
-            if (!node.isNetwork && this.network !== node.network) {
-                dot += "}\n"; /* End subgraph */
+            if (this.parent !== node.parent) {
+                dot += this.parent.endDotSubgraph();
             }
             dot += '"' + this.getDotId() + '":' + outputName + ' -> "' + node.getDotId() + '";\n';
             dot += node.toDot(subgraph);
