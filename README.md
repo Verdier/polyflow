@@ -15,7 +15,7 @@ var param = {
 }
 
 polyflow.nano('nano1', param, function ($inputs, $outputs) {
-    if (/*condition*/) {
+    if (/* condition */) {
 	    $outputs.out($inputs.in1 + $inputs.in2);
     } else if (/* condition */) {
         $outputs.other($inputs.in1, $inputs.in2)

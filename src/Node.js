@@ -36,9 +36,11 @@ var Node = function (polyflow, nano, binder) {
     this.fn = nano.fn;
 };
 
+Node.prototype.isNetwork = false;
+
 Node.prototype.connect = function (outputName, node) {
     if (this.connexions[outputName] === undefined) {
-        throw new Error('Ouput ' + outputName + ' is not defined');
+        throw new Error('Ouput ' + outputName + ' on component ' + this.nano.name + ' is not defined');
     }
     this.connexions[outputName].push(node);
 };
@@ -90,5 +92,45 @@ Node.prototype._handleOutput = function (flow, outputName, values) {
 Node.prototype._handleDone = function (flow) {
     flow.$decrease();
 };
+
+/* DOT */
+
+Node.maxDotId = 0;
+
+Node.prototype.getDotId = function () {
+    this.dotId = this.dotId || ++Node.maxDotId;
+    return this.dotId;
+};
+
+Node.prototype.toDot = function (subgraph) {
+    /* Definition */
+    var caption;
+    if (this.name.indexOf('$$anonymous_') === 0) {
+        caption = this.nano.name;
+    } else {
+        caption = this.name + '\n(' + this.nano.name + ')';
+    }
+
+    var outputs = Object.keys(this.connexions).map(function (output) {
+        return '<' + output + '>' + output;
+    }).join('|');
+
+    var dot = '"' + this.getDotId() + '"' +
+        ' [label="{{input}|{' + caption + '}|{' + outputs + '}}"];\n';
+
+    /* Connexions */
+    Object.keys(this.connexions).forEach(function (outputName) {
+        this.connexions[outputName].forEach(function (node) {
+            if (!node.isNetwork && this.network !== node.network) {
+                dot += "}\n"; /* End subgraph */
+            }
+            dot += '"' + this.getDotId() + '":' + outputName + ' -> "' + node.getDotId() + '";\n';
+            dot += node.toDot(subgraph);
+        }, this);
+    }, this);
+
+    return dot;
+};
+
 
 module.exports = Node;
