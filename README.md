@@ -2,7 +2,7 @@
 PolyFlow is a flow-based programming framework.
 
 ## Nano ##
-A `Nano` is an elementary component of a `Graph`.
+A `nano` is an elementary component of a `graph`.
 
 ```javascript
 var param = {
@@ -26,7 +26,7 @@ polyflow.nano('nano1', param, function ($inputs, $outputs) {
 ```
 
 ## Graph ##
-A `Graph` define a workflow.
+A `graph` define a workflow.
 
 ```javascript
 var graph = polyflow.graph('graph');
@@ -56,7 +56,7 @@ network.digest({
 ```
 
 ## Service ##
-PolyFlow has a dependency injection system which allows nano and/or service to depend on other services.
+PolyFlow has a dependency injection system which allows `nano` and/or `service` to depend on other `services`.
 
 ```javascript
 polyflow.service('service1', function () {
