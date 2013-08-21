@@ -101,7 +101,9 @@ Node.prototype.getDotId = function () {
 };
 
 Node.prototype.toDot = function (subgraph) {
-    /* Definition */
+    var dot = '';
+    
+    /* Caption */
     var caption;
     if (this.name.indexOf('$$anonymous_') === 0) {
         caption = this.nano.name;
@@ -109,24 +111,33 @@ Node.prototype.toDot = function (subgraph) {
         caption = this.name + '\n(' + this.nano.name + ')';
     }
 
+    /* Outputs */
     var outputs = Object.keys(this.connexions).map(function (output) {
         return '<' + output + '>' + output;
     }).join('|');
 
-    var dot = '"' + this.getDotId() + '"' +
+    dot += this.parent.getDotBeforeContent();
+    
+    /* Definition */
+    dot += '"' + this.getDotId() + '"' +
         ' [label="{{input}|{' + caption + '}|{' + outputs + '}}"];\n';
 
     /* Connexions */
     Object.keys(this.connexions).forEach(function (outputName) {
         this.connexions[outputName].forEach(function (node) {
-            if (this.parent !== node.parent) {
-                dot += this.parent.endDotSubgraph();
-            }
             dot += '"' + this.getDotId() + '":' + outputName + ' -> "' + node.getDotId() + '";\n';
-            dot += node.toDot(subgraph);
         }, this);
     }, this);
-
+    
+    dot += this.parent.getDotAfterContent();
+    
+    /* Next nodes */
+    Object.keys(this.connexions).forEach(function (outputName) {
+        this.connexions[outputName].forEach(function (node) {
+           dot += node.toDot(subgraph);
+        });
+    }, this);
+    
     return dot;
 };
 

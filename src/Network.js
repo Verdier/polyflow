@@ -57,29 +57,48 @@ Network.prototype.getDotId = function () {
     return this.nodes.begin.getDotId();
 };
 
-Network.prototype.endDotSubgraph = function () {
-    this.dotSubgraphEnded = true;
-    return '}\n';
+Network.prototype.getDotClusterId = function () {
+    this.dotClusterId = this.dotClusterId || ++Network.maxDotClusterId;
+    return this.dotClusterId;
+};
+
+Network.prototype.getDotBeforeContent = function () {
+    var subgraph = 'subgraph cluster' + this.getDotClusterId() + '{\n';
+    if (this.parent) {
+        subgraph = this.parent.getDotBeforeContent() + subgraph;
+    }
+    return subgraph;
+};
+
+Network.prototype.getDotAfterContent = function () {
+    var subgraph = '}\n';
+    if (this.parent) {
+        subgraph += this.parent.getDotAfterContent();
+    }
+    return subgraph;
 };
 
 Network.prototype.toDot = function (subgraph) {
     var dot = '';
-    if (subgraph) {
-        this.dotSubgraphEnded = false;
-        var cluster = 'cluster' + (++Network.maxDotClusterId);
-        dot += 'subgraph ' + cluster + ' {\n';
-        dot += 'label = "' + this.graph.name + '";\n';
-        dot += 'style = "dashed"\n';
-        dot += this.nodes.begin.toDot(true);
-        if (!this.dotSubgraphEnded) {
-            dot += this.endDotSubgraph();
-        }
-    } else {
+    
+    if (!subgraph) {
         dot += 'strict digraph G {\n';
         dot += 'node [shape=record];\n';
-        dot += this.nodes.begin.toDot(true);
+    }
+
+    /* Subgraph parameters */
+    dot += this.getDotBeforeContent();
+    dot += 'label = "' + this.graph.name + '";\n';
+    dot += 'style = "dashed";\n';
+    dot += this.getDotAfterContent();
+    
+    /* Nodes */
+    dot += this.nodes.begin.toDot(true);
+    
+    if (!subgraph) {
         dot += '}\n';
     }
+    
     return dot;
 };
 
