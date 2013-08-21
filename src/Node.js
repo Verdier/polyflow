@@ -116,21 +116,21 @@ Node.prototype.toDot = function (subgraph) {
         return '<' + output + '>' + output;
     }).join('|');
 
-    dot += this.parent.getDotBeforeContent();
-    
     /* Definition */
+    dot += this.parent.getDotBeforeContent();
     dot += '"' + this.getDotId() + '"' +
         ' [label="{{input}|{' + caption + '}|{' + outputs + '}}"];\n';
+    dot += this.parent.getDotAfterContent();
 
     /* Connexions */
     Object.keys(this.connexions).forEach(function (outputName) {
         this.connexions[outputName].forEach(function (node) {
+            dot += node.parent.getDotBeforeContent();
             dot += '"' + this.getDotId() + '":' + outputName + ' -> "' + node.getDotId() + '";\n';
+            dot += node.parent.getDotAfterContent();
         }, this);
     }, this);
-    
-    dot += this.parent.getDotAfterContent();
-    
+
     /* Next nodes */
     Object.keys(this.connexions).forEach(function (outputName) {
         this.connexions[outputName].forEach(function (node) {
