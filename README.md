@@ -57,7 +57,7 @@ network.digest({
 ```
 
 ## Binder ##
-The *inputs*/*outputs* of a `nano` could be bound to something in the flow, or to a constant value. For example:
+*Inputs* / *outputs* of a `nano` could be bound to something in the `flow` or to a constant value. For example:
 
 ```javascript
 var graph = polyflow.graph('graph');
