@@ -1,6 +1,6 @@
 {
   "name": "polyflow",
-  "version": "0.0.1beta",
+  "version": "0.0.1",
   "description": "A flow-based programming framework",
   "keywords": ["FBP", "flow", "workflow"],
   "author": "Luc Verdier <luc.verdier1@gmail.com>",
