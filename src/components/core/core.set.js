@@ -2,13 +2,36 @@
 
 module.exports = function (polyflow) {
 
-    var param = {
-        inputs: ['src'],
-        outputs: ['dst']
+    var Builder = function (build) {
+        this.build = build;
     };
 
-    polyflow.nano('core.set', param, function ($inputs, $outputs) {
-        $outputs.out($inputs.src);
+    Builder.prototype.$initialize = function (source) {
+        this.source = source;
+    };
+
+    Builder.prototype.in = function (destination) {
+        return this.build({
+            inputs: {
+                src: this.source
+            },
+            outputs: {
+                out: {
+                    dst: destination
+                }
+            }
+        });
+    };
+
+    polyflow.nano('core.set', {
+        shortcut: 'set',
+        Builder: Builder,
+
+        inputs: ['src'],
+        outputs: ['dst'],
+        fn: function ($inputs, $outputs) {
+            $outputs.out($inputs.src);
+        }
     });
 
 };

@@ -1,6 +1,7 @@
 'use strict';
 
 var Network = require('./Network.js');
+var Binder = require('./Binder.js');
 
 var Graph = function (polyflow, name, param) {
     this.polyflow = polyflow;
@@ -16,6 +17,24 @@ var Graph = function (polyflow, name, param) {
     /* Reset selection. */
     this._selected_node = null;
     this._selected_output = null;
+
+    /* Binder */
+    this.bind = null;
+};
+
+Graph.$addShortcut = function (componentName, shortcutName, Builder) {
+    if (Graph.prototype[shortcutName] !== undefined) {
+        throw new Error('Shortcut ' + shortcutName + ' is already defined');
+    }
+    Graph.prototype[shortcutName] = function () {
+        var build = function (nodeName, param) {
+            this.then(componentName, nodeName, param);
+            return this;
+        };
+        build = build.bind(this);
+        var builder = new Builder(build, this);
+        return builder.$initialize.apply(builder, arguments) || builder;
+    };
 };
 
 Graph.prototype.begin = function () {
@@ -33,6 +52,7 @@ Graph.prototype.select = function (nodeName, outputName) {
     }
     this._selected_node = nodeName;
     this._selected_output = outputName;
+    this.bind = this.nodes[nodeName].binder;
     return this;
 };
 
@@ -41,7 +61,7 @@ Graph.prototype.on = function (outputName) {
     return this;
 };
 
-Graph.prototype.then = function (componentName, nodeName, args) {
+Graph.prototype.then = function (componentName, nodeName, param) {
     if (this._selected_node === null) {
         throw new Error('No node selected');
     }
@@ -56,28 +76,26 @@ Graph.prototype.then = function (componentName, nodeName, args) {
         /* Then function was called with an existing node name. */
         this.select(componentName);
     } else {
-        this.addNode(componentName, nodeName, args);
+        this.addNode(componentName, nodeName, param);
     }
 
     this.connect(source_node, source_output, this._selected_node);
     return this;
 };
 
-Graph.prototype.addNode = function (componentName, nodeName, binder) {
+Graph.prototype.addNode = function (componentName, nodeName, param) {
     if (typeof componentName === 'function') {
         /* Create an anonymous nano */
         var fn = componentName;
         var nano = this.polyflow.nano(fn);
         componentName = nano.name;
     }
-    if (nodeName !== undefined && typeof nodeName !== 'string') {
-        binder = nodeName;
-        nodeName = undefined;
-    }
-    if (nodeName === undefined) {
+    if (typeof nodeName !== 'string') {
         /* Create a anonymous node */
+        param = nodeName;
         nodeName = this.polyflow.$anonymous.make();
     }
+
     if (this.nodes[nodeName] !== undefined) {
         throw new Error('A node with the name ' + nodeName + ' is already defined');
     }
@@ -85,7 +103,7 @@ Graph.prototype.addNode = function (componentName, nodeName, binder) {
     this.nodes[nodeName] = {
         nodeName: nodeName,
         componentName: componentName,
-        binder: binder
+        binder: new Binder(this, param)
     };
 
     this.select(nodeName);
@@ -110,6 +128,7 @@ Graph.prototype.output = function (outputName) {
 
     this._selected_node = null;
     this._selected_output = null;
+    this.bind = null;
     return this;
 };
 
@@ -123,56 +142,9 @@ Graph.prototype.connect = function (nodeA, output, nodeB) {
 };
 
 Graph.prototype.compile = function () {
-    return new Network(this.polyflow, this);
-};
-
-/* Shortcuts */
-
-Graph.prototype.label = function (nodeName) {
-    nodeName = nodeName || this.polyflow.$anonymous.make();
-    this.then('core.forwarder', nodeName);
-    return this;
-};
-
-Graph.prototype.set = function (dst, src, nodeName) {
-    nodeName = nodeName || this.polyflow.$anonymous.make();
-    this.then('core.set', nodeName, {
-        src: src,
-        dst: dst
-    });
-    return this;
-};
-
-Graph.prototype.unset = function (name, value, nodeName) {
-    nodeName = nodeName || this.polyflow.$anonymous.make();
-    this.then('core.unset', nodeName, {
-        name: "'" + name + "'"
-    });
-    return this;
-};
-
-Graph.prototype.forEach = function (src, dst, nodeName) {
-    nodeName = nodeName || this.polyflow.$anonymous.make();
-    var key = dst.key || null;
-    var value = dst.value || null;
-    if (key === null && value === null) {
-        value = dst;
-    }
-    this.then('core.forEach', nodeName, {
-        src: src,
-        key: key,
-        value: value
-    });
-    return this;
-};
-
-Graph.prototype.append = function (src, dst, nodeName) {
-    nodeName = nodeName || this.polyflow.$anonymous.make();
-    this.then('core.append', nodeName, {
-        src: src,
-        dst: dst
-    });
-    return this;
+    var network = new Network(this.polyflow, this);
+    network.finalize(null, null);
+    return network;
 };
 
 module.exports = Graph;

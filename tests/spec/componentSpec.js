@@ -18,7 +18,7 @@ describe('The component', function () {
             network.digest();
         });
 
-        it('should be definable in graph using label shortcut', function (done) {
+        it('has label shortcut', function (done) {
             var graph = polyflow.graph('graph');
 
             graph.begin()
@@ -43,18 +43,9 @@ describe('The component', function () {
             var array = [1, 2, 3];
 
             graph.begin()
-                .then('core.set', {
-                    dst: 'array',
-                    src: array
-                })
-                .then('core.set', {
-                    dst: 'bool',
-                    src: true
-                })
-                .then('core.set', {
-                    dst: 'bool2',
-                    src: 'bool'
-                })
+                .set(array).in('array')
+                .set(true).in('bool')
+                .set('bool').in('bool2')
                 .then(function ($flow) {
                     expect($flow.array).toEqual([1, 2, 3]);
                     expect($flow.array).not.toBe(array);
@@ -67,52 +58,11 @@ describe('The component', function () {
             network.digest();
         });
 
-        it('should be definable in graph using set shortcut', function (done) {
-            var graph = polyflow.graph('graph');
-            var array = [1, 2, 3];
-
-            graph.begin()
-                .set('array', array)
-                .set('bool', true)
-                .then(function ($flow) {
-                    expect($flow.array).toEqual([1, 2, 3]);
-                    expect($flow.array).not.toBe(array);
-                    expect($flow.bool).toBe(true);
-                    done();
-                });
-
-            var network = graph.compile();
-            network.digest();
-        });
-
     });
 
     describe('core.unset', function () {
 
         it('should remove something from the flow', function (done) {
-            var graph = polyflow.graph('graph');
-
-            graph.begin()
-                .then('core.unset', {
-                    name: '"array"',
-                })
-                .then('core.unset', {
-                    name: '"bool"',
-                })
-                .then(function ($flow) {
-                    expect($flow.array).toBeUndefined();
-                    expect($flow.bool).toBeUndefined();
-                    done();
-                });
-
-            var network = graph.compile();
-            network.digest({
-                array: [1, 2, 3],
-                bool: true
-            });
-        });
-
-        it('should be definable in graph using unset shortcut', function (done) {
             var graph = polyflow.graph('graph');
 
             graph.begin()
@@ -140,10 +90,7 @@ describe('The component', function () {
             var array = [];
 
             graph.begin()
-                .then('core.forEach', {
-                    src: [1, 2, 3],
-                    dst: 'value'
-                })
+                .forEach([1, 2, 3]).as('value')
                 .then(function ($flow) {
                     array.push($flow.value);
                 });
@@ -163,19 +110,15 @@ describe('The component', function () {
             var obj = {};
 
             graph.begin()
-                .set('object', {
+                .set({
                     a: 1,
                     b: 2
-                })
-                .forEach('object', {
-                    value: 'value',
-                    key: 'key'
-                }, 'A')
+                }).in('object')
+                .forEach('object').as('value', 'key')
                 .then(function ($flow) {
                     obj[$flow.key] = $flow.value;
-                });
-
-            graph.select('A').on('finished')
+                })
+                .end()
                 .then(function () {
                     expect(obj).toEqual({
                         a: 1,
@@ -188,20 +131,16 @@ describe('The component', function () {
             network.digest();
         });
 
-        it('should fire finished when all subflows are died', function (done) {
+        it('should fire $finished when all subflows are died', function (done) {
             var graph = polyflow.graph('graph');
             var counter = 0;
 
             graph.begin()
-                .then('core.forEach', 'A', {
-                    src: [1, 2, 3],
-                    dst: 'value'
+                .forEach([1, 2, 3]).as('value')
+                .then(function () {
+                    ++counter;
                 })
-                .then(function () {
-                    ++counter;
-                });
-
-            graph.select('A').on('finished')
+                .end()
                 .then(function () {
                     expect(counter).toBe(3);
                     done();
@@ -211,38 +150,17 @@ describe('The component', function () {
             network.digest();
         });
 
-        it('should be definable in graph using forEach shortcut', function (done) {
+        it('should loop over an array in the flow', function (done) {
             var graph = polyflow.graph('graph');
             var counter = 0;
 
             graph.begin()
-                .forEach([1, 2, 3], 'value', 'A')
+                .set([1, 2, 3]).in('values')
+                .forEach('values').as('value')
                 .then(function () {
                     ++counter;
-                });
-
-            graph.select('A').on('finished')
-                .then(function () {
-                    expect(counter).toBe(3);
-                    done();
-                });
-
-            var network = graph.compile();
-            network.digest();
-        });
-
-        it('should extract an array from the flow', function (done) {
-            var graph = polyflow.graph('graph');
-            var counter = 0;
-
-            graph.begin()
-                .set('array', [1, 2, 3])
-                .forEach('array', 'value', 'A')
-                .then(function () {
-                    ++counter;
-                });
-
-            graph.select('A').on('finished')
+                })
+                .end()
                 .then(function () {
                     expect(counter).toBe(3);
                     done();
@@ -260,15 +178,9 @@ describe('The component', function () {
             var graph = polyflow.graph('graph');
 
             graph.begin()
-                .set('array', [])
-                .then('core.append', {
-                    src: 1,
-                    dst: 'array'
-                })
-                .then('core.append', {
-                    src: 2,
-                    dst: 'array'
-                })
+                .set([]).in('array')
+                .append(1).to('array')
+                .append(2).to('array')
                 .then(function ($flow) {
                     expect($flow.array).toEqual([1, 2]);
                     done();
@@ -282,11 +194,11 @@ describe('The component', function () {
             var graph = polyflow.graph('graph');
 
             graph.begin()
-                .set('array', [])
-                .set('v1', 1)
-                .set('v2', 2)
-                .append('v1', 'array')
-                .append('v2', 'array')
+                .set([]).in('array')
+                .set(1).in('v1')
+                .set(2).in('v2')
+                .append('v1').to('array')
+                .append('v2').to('array')
                 .then(function ($flow) {
                     expect($flow.array).toEqual([1, 2]);
                     done();
@@ -296,16 +208,15 @@ describe('The component', function () {
             network.digest();
         });
 
-        it('should works with forEach', function (done) {
+        it('should work with forEach', function (done) {
             var graph = polyflow.graph('graph');
 
             graph.begin()
-                .set('src', [1, 2, 3])
-                .set('dst', [])
-                .forEach('src', 'value', 'A')
-                .append('value', 'dst');
-
-            graph.select('A').on('finished')
+                .set([1, 2, 3]).in('src')
+                .set([]).in('dst')
+                .forEach('src').as('value')
+                .append('value').to('dst')
+                .end()
                 .then(function ($flow) {
                     expect($flow.dst).toEqual([1, 2, 3]);
                     done();

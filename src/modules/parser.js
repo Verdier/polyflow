@@ -8,18 +8,22 @@ var isSpecialString = function (arg) {
         (arg.charAt(0) === '"' && arg.charAt(arg.length - 1) === '"'));
 };
 
-var makeSubExtractor = function (src) {
+var parser = {};
+
+parser.makeExtractor = function (argument) {
     var extractor = {};
     extractor.$inputs = [];
 
-    if (typeof src === 'string') {
-        if (isSpecialString(src)) {
-            src = src.substring(1, src.length - 1);
+    if (typeof argument === 'string') {
+        if (isSpecialString(argument)) {
+            /* Argument is a string value */
+            argument = argument.substring(1, argument.length - 1);
             extractor.extract = function ($stream) {
-                return src;
+                return argument;
             };
         } else {
-            var keys = src.split('.');
+            /* Argument is a name or a path */
+            var keys = argument.split('.');
             var firstKey = keys.shift();
             extractor.$inputs.push(firstKey);
             extractor.extract = function ($stream) {
@@ -31,28 +35,38 @@ var makeSubExtractor = function (src) {
             };
         }
     } else {
+        /* Argument is an object */
         extractor.extract = function () {
-            return clone(src);
+            return clone(argument);
         };
     }
 
     return extractor;
 };
 
-var makeSubInjector = function (target) {
+parser.makeInjector = function (argument) {
     var injector = {};
     injector.$inputs = [];
     injector.$outputs = [];
 
-    var keys = target.split('.');
+    if (argument === null) {
+        /* Argument is ignored, nothing is
+         * injected into the flow */
+        injector.inject = function (value, $stream) {};
+        return injector;
+    }
+
+    var keys = argument.split('.');
     var firstKey = keys.shift();
 
     if (keys.length === 0) {
+        /* Argument is a name */
         injector.$outputs.push(firstKey);
         injector.inject = function (value, $stream) {
             $stream[firstKey] = value;
         };
     } else {
+        /* Argument is a path */
         injector.$inputs.push(firstKey);
         var lastKey = keys.pop();
         injector.inject = function (value, $stream) {
@@ -63,68 +77,6 @@ var makeSubInjector = function (target) {
             obj[lastKey] = value;
         };
     }
-
-    return injector;
-};
-
-var parser = {};
-
-parser.makeExtractor = function (sources, binder) {
-    var extractor = {};
-    extractor.$inputs = [];
-    extractor.$extractors = {};
-
-    sources.forEach(function (src) {
-        var boundSrc = src;
-        if (binder[src] !== undefined) {
-            boundSrc = binder[src];
-        }
-        var subExtractor = makeSubExtractor(boundSrc);
-        extractor.$extractors[src] = subExtractor;
-        extractor.$inputs = extractor.$inputs.concat(subExtractor.$inputs);
-    }, this);
-
-    extractor.$inputs = extractor.$inputs.filter(function (elem, pos) {
-        return extractor.$inputs.indexOf(elem) === pos;
-    });
-
-    extractor.extract = function (stream) {
-        var values = {};
-        sources.forEach(function (src) {
-            var subExtractor = extractor.$extractors[src];
-            values[src] = subExtractor.extract(stream);
-        });
-        return values;
-    };
-
-    return extractor;
-};
-
-parser.makeInjector = function (targets, binder) {
-    var injector = {};
-    injector.$inputs = [];
-    injector.$outputs = [];
-    injector.$injectors = {};
-
-    targets.forEach(function (target) {
-        var subInjector = makeSubInjector(binder[target] || target);
-        injector.$injectors[target] = subInjector;
-        injector.$inputs = injector.$inputs.concat(subInjector.$inputs);
-        injector.$outputs = injector.$outputs.concat(subInjector.$outputs);
-    }, this);
-
-    injector.$inputs = injector.$inputs.filter(function (elem, pos) {
-        return injector.$inputs.indexOf(elem) === pos;
-    });
-    injector.$outputs = injector.$outputs.filter(function (elem, pos) {
-        return injector.$outputs.indexOf(elem) === pos;
-    });
-
-    injector.inject = function (values, stream) {
-        targets.forEach(function (target) {
-            injector.$injectors[target].inject(values[target], stream);
-        });
-    };
 
     return injector;
 };

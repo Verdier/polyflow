@@ -40,7 +40,7 @@ polyflow.service = function (name, factory) {
 
 polyflow.nano = function (name, param, fn) {
     if (typeof name === 'function') {
-        /* Create a anonymous nano */
+        /* Anonymous nano */
         fn = name;
         name = anonymous.make();
         param = {};
@@ -48,8 +48,18 @@ polyflow.nano = function (name, param, fn) {
     if (fn !== undefined) {
         param.fn = fn;
     }
+
     var nano = new Nano(polyflow, name, param);
     polyflow._components[name] = nano;
+
+    /* Add shortcut */
+    if (param.shortcut !== undefined) {
+        if (param.Builder === undefined) {
+            throw new Error('No Builder define for shortcut ' + param.shortcut);
+        }
+        Graph.$addShortcut(name, param.shortcut, param.Builder);
+    }
+
     return nano;
 };
 

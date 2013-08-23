@@ -25,30 +25,21 @@ outputHandler.makeOutputHandlerConstructor = function (outputs) {
 
     Object.keys(outputs).forEach(function (outputName) {
 
-        var output = outputs[outputName],
-            subflow,
+        var subflow,
             args;
 
-        if (util.isArray(output)) {
-            args = output;
-        } else {
-            subflow = output.subflow;
-            args = output.args;
+        args = outputs[outputName];
+        if (!util.isArray(args)) {
+            subflow = args.subflow;
+            args = args.args;
         }
 
         subflow = subflow || false;
         args = args || [];
 
-        var nullArgCount = 0;
-        args.forEach(function (arg) {
-            if (arg === null) {
-                ++nullArgCount;
-            }
-        });
-
         /* Make output function handler */
         OutputHandler.prototype[outputName] = function () {
-            var argsCount = args.length + (subflow ? 1 : 0) - nullArgCount;
+            var argsCount = args.length + (subflow ? 1 : 0);
             if (arguments.length !== argsCount) {
                 throw new Error('Bad number of parameters');
             }
@@ -57,19 +48,12 @@ outputHandler.makeOutputHandlerConstructor = function (outputs) {
             }
 
             var values = {};
-            var inc = (subflow ? 1 : 0);
+            var inc = subflow ? 1 : 0;
             for (var i = 0; i < arguments.length; ++i) {
-                if (args[i] !== null) {
-                    values[args[i]] = arguments[i + inc];
-                }
+                values[args[i]] = arguments[i + inc];
             }
 
-            var flow;
-            if (subflow) {
-                flow = arguments[0];
-            } else {
-                flow = this.$$flow;
-            }
+            var flow = subflow ? arguments[0] : this.$$flow;
 
             this.$$param.onOutputCalled(flow, outputName, values);
             ++this.$$counter;

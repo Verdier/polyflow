@@ -141,6 +141,12 @@ describe('PolyFlow', function () {
         });
     });
 
+    describe('binder', function () {
+        var Binder = require('../../src/Binder.js');
+
+        /* TODO */
+    });
+
     describe('graph', function () {
 
         it('should be chainable using then', function (done) {
@@ -157,7 +163,7 @@ describe('PolyFlow', function () {
             network.digest();
         });
 
-        it('should have a select methode', function () {
+        it('should has a select methode', function () {
             var graph = polyflow.graph('graph');
 
             var a = false,
@@ -203,7 +209,7 @@ describe('PolyFlow', function () {
 
         });
 
-        it('should have an on methode to select an ouput', function () {
+        it('should has an on methode to select an ouput', function () {
             var graph = polyflow.graph('graph');
 
             var a = false,
@@ -297,6 +303,63 @@ describe('PolyFlow', function () {
             waitsFor(function () {
                 return a && b;
             }, 'all branches to finilize', 200);
+
+        });
+
+        it('should allow to bind inputs/outputs', function () {
+            var a = false,
+                b = false,
+                graph = polyflow.graph('graph');
+
+            graph.begin()
+                .then('nano.io', 'io')
+                .then(function ($flow) {
+                    expect($flow.out11).toBe(true);
+                    a = true;
+                });
+
+            graph.select('io').on('out2')
+                .then(function ($flow) {
+                    expect($flow.out22).toBe(false);
+                    b = true;
+                });
+
+            graph.select('io')
+                .bind.input('in1').to('in11')
+                .bind.output('out', 'out1').to('out11')
+                .bind.output('out2', 'out2').to('out22');
+
+            var network = graph.compile();
+
+            runs(function () {
+                network.digest({
+                    in11: true
+                });
+                network.digest({
+                    in11: false
+                });
+            });
+
+            waitsFor(function () {
+                return a && b;
+            }, 'all branches to finilize', 200);
+        });
+
+        it('should allow to ignore an output', function (done) {
+            var graph = polyflow.graph('graph');
+
+            graph.begin()
+                .then('nano.io', 'io')
+                .bind.output('out', 'out1').to(null)
+                .then(function ($flow) {
+                    expect($flow.out1).toBeUndefined();
+                    done();
+                });
+
+            var network = graph.compile();
+            network.digest({
+                in1: true
+            });
 
         });
     });

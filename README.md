@@ -1,5 +1,5 @@
 # PolyFlow #
-PolyFlow is a flow-based programming framework.
+PolyFlow is a flow-based programming framework. It is made to be highly asynchronous.
 
 ## Nano ##
 A `nano` is an elementary component of a `graph`.
@@ -26,7 +26,7 @@ polyflow.nano('nano1', param, function ($inputs, $outputs) {
 ```
 
 ## Graph ##
-A `graph` define a workflow.
+A `graph` defines a workflow.
 
 ```javascript
 var graph = polyflow.graph('graph');
@@ -37,6 +37,7 @@ graph.begin()
     .then('nano3')
     .label('B')
     .then('nano6');
+    /* ... */
     
 graph.select('A').on('other')
     .then('nano4')
@@ -53,6 +54,48 @@ network.digest({
     in1: 1,
     in2: 2
 });
+```
+
+## Binder ##
+The *inputs*/*outputs* of a `nano` could be bound to something in the flow, or to a constant value. For example:
+
+```javascript
+var graph = polyflow.graph('graph');
+
+graph.begin()
+    .then('nano1', 'A') /* named node */
+    .then('nano2')
+    /* ... */
+    
+graph.select('A')
+    .bind.input('in1').to('obj1')
+    .bind.input('in2').to([1, 2, 3])
+    .bind.output('out', 'out1').to('obj1.field')
+    /* ... */
+    
+var network = graph.compile();
+network.digest({
+    obj1: 1
+});
+```
+
+## Shortcut ##
+A `nano` could defined a *shortcut*. Shortcuts are used to define a graph. For example:
+
+```javascript
+var graph = polyflow.graph('graph');
+
+graph.begin()
+    .set([]).in('values')
+    .forEach([1, 2, 3]).as('value')
+    .append('value').to('values')
+    .end()
+    .then(function ($flow) {
+        console.log($flow.values);
+    });
+    
+var network = graph.compile();
+network.digest();
 ```
 
 ## Service ##

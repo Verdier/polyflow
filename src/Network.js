@@ -7,14 +7,18 @@ var Network = function (polyflow, graph) {
     this.graph = graph;
     this.nodes = {};
 
+    this.name = null;
+    this.parent = null;
+    this.previous = null;
+
+    /* Compile components */
     Object.keys(graph.nodes).forEach(function (nodeName) {
         var definition = graph.nodes[nodeName];
         var component = polyflow.getComponent(definition.componentName);
         this.nodes[nodeName] = component.compile(definition.binder);
-        this.nodes[nodeName].name = nodeName;
-        this.nodes[nodeName].parent = this;
     }, this);
 
+    /* Connect components */
     graph.connexions.forEach(function (connexion) {
         var nodeA = this.nodes[connexion.nodeA],
             nodeB = this.nodes[connexion.nodeB];
@@ -49,6 +53,14 @@ Network.prototype.digest = function (flow) {
     this.nodes.begin.digest(flow);
 };
 
+Network.prototype.finalize = function (parent, nodeName) {
+    this.parent = parent;
+    this.nodeName = nodeName;
+    Object.keys(this.nodes).forEach(function (childNodeName) {
+        this.nodes[childNodeName].finalize(this, childNodeName);
+    }, this);
+};
+
 /* DOT */
 
 Network.maxDotClusterId = 0;
@@ -80,7 +92,7 @@ Network.prototype.getDotAfterContent = function () {
 
 Network.prototype.toDot = function (subgraph) {
     var dot = '';
-    
+
     if (!subgraph) {
         dot += 'strict digraph G {\n';
         dot += 'node [shape=record];\n';
@@ -91,14 +103,14 @@ Network.prototype.toDot = function (subgraph) {
     dot += 'label = "' + this.graph.name + '";\n';
     dot += 'style = "dashed";\n';
     dot += this.getDotAfterContent();
-    
+
     /* Nodes */
     dot += this.nodes.begin.toDot(true);
-    
+
     if (!subgraph) {
         dot += '}\n';
     }
-    
+
     return dot;
 };
 
