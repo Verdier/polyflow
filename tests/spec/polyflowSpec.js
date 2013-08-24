@@ -1,5 +1,7 @@
 'use strict';
 
+var path = require('path');
+
 describe('PolyFlow', function () {
     var polyflow = require('../../src/polyflow');
 
@@ -43,7 +45,7 @@ describe('PolyFlow', function () {
 
     });
 
-    describe('dependecy injection system', function () {
+    describe('dependency injection system', function () {
 
         polyflow.service('service1', function () {
             return {
@@ -138,6 +140,13 @@ describe('PolyFlow', function () {
             network.digest({
                 in1: true
             });
+        });
+        
+        it('should load services in folder', function () {
+            polyflow.loadServices(path.join(__dirname, '../fixtures/services/'));
+            
+            expect(polyflow.getService('folderService1')).toBeDefined();
+            expect(polyflow.getService('folderService2')).toBeDefined();
         });
     });
 

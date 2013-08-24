@@ -34,6 +34,10 @@ polyflow.injectService = function (name, service) {
     injector.addServiceInstance(name, service);
 };
 
+polyflow.getService = function (name) {
+    return injector.getService(name);
+};
+
 polyflow.service = function (name, factory) {
     injector.addService(name, factory);
 };
@@ -78,6 +82,19 @@ polyflow.loadComponents = function (dirname) {
             polyflow.loadComponents(fullname);
         } else {
             require(fullname)(polyflow);
+        }
+    });
+};
+
+polyflow.loadServices = function (dirname) {
+    dirname = path.resolve(dirname);
+    var names = fs.readdirSync(dirname);
+    names.forEach(function (name) {
+        var fullname = path.join(dirname, name);
+        if (fs.lstatSync(fullname).isFile()) {
+            var serviceName = name.replace(/.js$/, '');
+            var service = require(fullname);
+            polyflow.service(serviceName, service);
         }
     });
 };

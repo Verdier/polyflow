@@ -13,6 +13,9 @@ var annotate = function (fn) {
     var $arguments = [];
     var fnText = fn.toString().replace(STRIP_COMMENTS, '');
     var argDecl = fnText.match(FN_ARGS);
+    if (argDecl === null) {
+            debugger;
+    }
     argDecl[1].split(FN_ARG_SPLIT).forEach(function (arg) {
         arg.replace(FN_ARG, function (all, underscore, name) {
             $arguments.push(name);
