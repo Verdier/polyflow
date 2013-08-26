@@ -87,13 +87,17 @@ polyflow.loadComponents = function (dirname) {
 };
 
 polyflow.loadServices = function (dirname) {
+    var regex = /.js$/;
     dirname = path.resolve(dirname);
     var names = fs.readdirSync(dirname);
     names.forEach(function (name) {
         var fullname = path.join(dirname, name);
-        if (fs.lstatSync(fullname).isFile()) {
-            var serviceName = name.replace(/.js$/, '');
+        if (fs.lstatSync(fullname).isFile() && name.search(regex) !== -1) {
+            var serviceName = name.replace(regex, '');
             var service = require(fullname);
+            if (typeof service !== 'function') {
+                throw new Error('Bad service ' + serviceName + ' in file ' + fullname);
+            }
             polyflow.service(serviceName, service);
         }
     });
