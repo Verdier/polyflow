@@ -1,7 +1,6 @@
 'use strict';
 
 var Flow = require('./Flow.js');
-var Node = require('./Node.js');
 
 var Network = function (polyflow, graph) {
     this.graph = graph;

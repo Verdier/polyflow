@@ -43,9 +43,9 @@ describe('The component', function () {
             var array = [1, 2, 3];
 
             graph.begin()
-                .set(array).in('array')
-                .set(true).in('bool')
-                .set('bool').in('bool2')
+                .set('array', array)
+                .set('bool', true)
+                .set('bool2', 'bool')
                 .then(function ($flow) {
                     expect($flow.array).toEqual([1, 2, 3]);
                     expect($flow.array).not.toBe(array);
@@ -96,7 +96,7 @@ describe('The component', function () {
                 });
 
             var flow = new polyflow.Flow();
-            flow.$on('die', function (flow) {
+            flow.$on('die', function () {
                 expect(array).toEqual([1, 2, 3]);
                 done();
             });
@@ -110,10 +110,10 @@ describe('The component', function () {
             var obj = {};
 
             graph.begin()
-                .set({
+                .set('object', {
                     a: 1,
                     b: 2
-                }).in('object')
+                })
                 .forEach('object').as('value', 'key')
                 .then(function ($flow) {
                     obj[$flow.key] = $flow.value;
@@ -155,7 +155,7 @@ describe('The component', function () {
             var counter = 0;
 
             graph.begin()
-                .set([1, 2, 3]).in('values')
+                .set('values', [1, 2, 3])
                 .forEach('values').as('value')
                 .then(function () {
                     ++counter;
@@ -178,7 +178,7 @@ describe('The component', function () {
             var graph = polyflow.graph('graph');
 
             graph.begin()
-                .set([]).in('array')
+                .set('array', [])
                 .append(1).to('array')
                 .append(2).to('array')
                 .then(function ($flow) {
@@ -194,9 +194,9 @@ describe('The component', function () {
             var graph = polyflow.graph('graph');
 
             graph.begin()
-                .set([]).in('array')
-                .set(1).in('v1')
-                .set(2).in('v2')
+                .set('array', [])
+                .set('v1', 1)
+                .set('v2', 2)
                 .append('v1').to('array')
                 .append('v2').to('array')
                 .then(function ($flow) {
@@ -212,8 +212,8 @@ describe('The component', function () {
             var graph = polyflow.graph('graph');
 
             graph.begin()
-                .set([1, 2, 3]).in('src')
-                .set([]).in('dst')
+                .set('src', [1, 2, 3])
+                .set('dst', [])
                 .forEach('src').as('value')
                 .append('value').to('dst')
                 .end()

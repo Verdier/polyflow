@@ -86,7 +86,7 @@ A `nano` could defined a *shortcut*. Shortcuts are used to define a graph. For e
 var graph = polyflow.graph('graph');
 
 graph.begin()
-    .set([]).in('values')
+    .set('values', [])
     .forEach([1, 2, 3]).as('value')
     .append('value').to('values')
     .end()

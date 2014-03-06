@@ -141,10 +141,10 @@ describe('PolyFlow', function () {
                 in1: true
             });
         });
-        
+
         it('should load services in folder', function () {
             polyflow.loadServices(path.join(__dirname, '../fixtures/services/'));
-            
+
             expect(polyflow.getService('folderService1')).toBeDefined();
             expect(polyflow.getService('folderService2')).toBeDefined();
         });
@@ -395,7 +395,7 @@ describe('PolyFlow', function () {
                 });
 
             var flow = new polyflow.Flow();
-            flow.$on('die', function (flow) {
+            flow.$on('die', function () {
                 expect(a).toBe(true);
                 expect(b).toBe(true);
                 done();

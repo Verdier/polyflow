@@ -1,15 +1,19 @@
 {
-  "name": "polyflow",
-  "version": "0.0.1",
-  "description": "A flow-based programming framework",
-  "keywords": ["FBP", "flow", "workflow"],
-  "author": "Luc Verdier <luc.verdier1@gmail.com>",
-  "main": "./src/polyflow",
-  "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-jsbeautifier": "~0.1.9",
-    "grunt-contrib-jshint": "~0.6.0",
-    "grunt-contrib-watch": "~0.4.4",
-    "grunt-jasmine-node": "~0.1.0"
-  }
+    "name": "polyflow",
+    "version": "0.0.2",
+    "description": "A flow-based programming framework",
+    "keywords": ["FBP", "flow", "workflow", "asynchronous"],
+    "author": "Luc Verdier <luc.verdier1@gmail.com>",
+    "main": "./src/polyflow",
+        "devDependencies": {
+        "grunt": "~0.4.2",
+        "grunt-jsbeautifier": "~0.1.9",
+        "grunt-contrib-jshint": "~0.8.0",
+        "grunt-contrib-watch": "~0.5.3",
+        "grunt-jasmine-node": "~0.1.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Verdier/polyflow"
+    }
 }

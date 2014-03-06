@@ -1,7 +1,5 @@
 'use strict';
 
-var util = require('util');
-
 module.exports = function (polyflow) {
 
     var Builder = function (build) {
@@ -51,7 +49,7 @@ module.exports = function (polyflow) {
             var counter = keys.length;
             keys.forEach(function (key) {
                 var subflow = $flow.$createSubflow();
-                subflow.$on('die', function (flow) {
+                subflow.$on('die', function () {
                     --counter;
                     if (counter === 0) {
                         $outputs.$finished();

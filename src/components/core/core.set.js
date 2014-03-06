@@ -6,14 +6,10 @@ module.exports = function (polyflow) {
         this.build = build;
     };
 
-    Builder.prototype.$initialize = function (source) {
-        this.source = source;
-    };
-
-    Builder.prototype.in = function (destination) {
+    Builder.prototype.$initialize = function (destination, source) {
         return this.build({
             inputs: {
-                src: this.source
+                src: source
             },
             outputs: {
                 out: {

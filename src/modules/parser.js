@@ -52,7 +52,7 @@ parser.makeInjector = function (argument) {
     if (argument === null) {
         /* Argument is ignored, nothing is
          * injected into the flow */
-        injector.inject = function (value, $stream) {};
+        injector.inject = function () {};
         return injector;
     }
 

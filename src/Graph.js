@@ -3,7 +3,7 @@
 var Network = require('./Network.js');
 var Binder = require('./Binder.js');
 
-var Graph = function (polyflow, name, param) {
+var Graph = function (polyflow, name) {
     this.polyflow = polyflow;
     this.name = name;
 

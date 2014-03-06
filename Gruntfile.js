@@ -21,7 +21,6 @@ module.exports = function (grunt) {
 
         jshint: {
             options: {
-                /* camelcase: true, */
                 curly: true,
                 eqeqeq: true,
                 indent: 4,
@@ -34,7 +33,6 @@ module.exports = function (grunt) {
                 white: true,
                 globalstrict: true,
                 node: true,
-                browser: true,
                 devel: true,
                 globals: {
                     /* Jasmine variables. */
@@ -78,6 +76,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-jasmine-node');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
-    grunt.registerTask('default', ['jsbeautifier', 'jshint', 'jasmine_node']);
+    grunt.registerTask('lint', ['jsbeautifier', 'jshint']);
+    grunt.registerTask('test', ['jasmine_node']);
+    grunt.registerTask('default', ['lint', 'test']);
 
 };
