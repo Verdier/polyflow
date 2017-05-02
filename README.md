@@ -7,16 +7,16 @@ A `nano` is an elementary component of a `graph`.
 ```javascript
 var param = {
     inputs: ['in1', 'in2'],
-	outputs: {
-		out: ['out1'], /* standard output */
+    outputs: {
+        out: ['out1'], /* standard output */
         other: ['out1', 'out2']
-		err: ['error']
-	}
+        err: ['error']
+    }
 }
 
 polyflow.nano('nano1', param, function ($inputs, $outputs) {
     if (/* condition */) {
-	    $outputs.out($inputs.in1 + $inputs.in2);
+        $outputs.out($inputs.in1 + $inputs.in2);
     } else if (/* condition */) {
         $outputs.other($inputs.in1, $inputs.in2)
     } else {
